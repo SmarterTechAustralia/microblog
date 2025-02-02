@@ -19,7 +19,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 2. Install the required Python packages:
 
     ```sh
-    pip install requests schedule python-telegram-bot pyyaml
+    pip install -r requirements.txt --check
     ```
 
 3. Create a [keys.yaml](http://_vscodecontentref_/0) file in the project directory with your credentials:
