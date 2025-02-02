@@ -40,18 +40,18 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 1. Initialize the database:
 
     ```sh
-    python -c "from sysnc import init_db; init_db()"
+    python -c "from sync import init_db; init_db()"
     ```
 
 2. Run the synchronization script:
 
     ```sh
-    python sysnc.py
+    python sync.py
     ```
 
 ## Project Structure
 
-- [sysnc.py](http://_vscodecontentref_/1): Main script to synchronize posts between Telegram and WordPress.
+- [sync.py](http://_vscodecontentref_/1): Main script to synchronize posts between Telegram and WordPress.
 - [keys.yaml](http://_vscodecontentref_/2): Configuration file containing Telegram and WordPress credentials.
 
 ## License
