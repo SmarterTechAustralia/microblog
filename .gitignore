@@ -1,0 +1,45 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+./
+
+# System directories
+/lib
+/lib64
+/bin
+/sbin
+/usr
+/boot
+/dev
+/etc
+/home
+/mnt
+/opt
+/proc
+/root
+/run
+/srv
+/sys
+/tmp
+/var
+
+# Environment variables
+.env
+
+# YAML configuration files
+keys.yaml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# macOS files
+.DS_Store
