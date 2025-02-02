@@ -11,13 +11,13 @@ with open("keys.yaml", "r") as file:
     keys = yaml.safe_load(file)
 
 # Telegram Bot Credentials
-TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-TELEGRAM_CHANNEL_ID = "@your_channel"
+TELEGRAM_BOT_TOKEN = keys["telegram"]["bot_token"]
+TELEGRAM_CHANNEL_ID = keys["telegram"]["channel_id"]
 
 # WordPress Credentials
-WORDPRESS_URL = "https://yourwordpress.com/wp-json/wp/v2/posts"
-WP_USERNAME = "your_username"
-WP_PASSWORD = "your_password"
+WORDPRESS_URL = keys["wordpress"]["url"]
+WP_USERNAME = keys["wordpress"]["username"]
+WP_PASSWORD = keys["wordpress"]["password"]
 
 # Initialize Telegram Bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)

@@ -12,8 +12,8 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/microblog-sync.git
-    cd microblog-sync
+    git clone https://github.com/SmarterTechAustralia/microblog.git
+    cd microblog
     ```
 
 2. Install the required Python packages:
