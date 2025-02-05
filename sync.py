@@ -7,7 +7,7 @@ from telegram import Bot, InputFile
 from telegram.error import TelegramError
 from io import BytesIO
 import yaml
-from datetime import datetime
+from datetime import datetime, timezone
 
 with open("keys.yaml", "r") as file:
     keys = yaml.safe_load(file)
@@ -32,25 +32,27 @@ bot = Bot(token=TELEGRAM_BOT_TOKEN)
 async def verify_bot_token():
     try:
         bot_info = await bot.get_me()
-        print("Bot Info:", bot_info)
+        # print("Bot Info:", bot_info)
     except TelegramError as e:
         print("Failed to verify bot token:", e)
 
 
 # Define the download_telegram_image function
 async def download_telegram_image(file_id):
-    print("Downloading image:", file_id)
+    # print("Downloading image:", file_id)
     try:
+        os.makedirs("images", exist_ok=True)
+        image_path = os.path.join("images", f"{file_id}.jpg")
+
+        if os.path.exists(image_path):
+            # print("Image already exists:", image_path)
+            return image_path
+
         file = await bot.get_file(file_id)
         file_path = file.file_path
-        # print("File Path:", file_path)
-        # file_url = f"https://api.telegram.org/file/bot{TELEGRAM_BOT_TOKEN}/{file_path}"
-        # print("File URL:", file_url)
 
         response = requests.get(file_path)
         if response.status_code == 200:
-            os.makedirs("images", exist_ok=True)
-            image_path = os.path.join("images", file_path.split("/")[-1])
             with open(image_path, "wb") as f:
                 f.write(response.content)
             return image_path
@@ -73,6 +75,7 @@ def init_db():
             text TEXT,
             image_url TEXT,
             wp_post_id INTEGER,
+            wp_media_id INTEGER,
             created_at TEXT,
             updated_at TEXT,
             deleted INTEGER DEFAULT 0
@@ -133,8 +136,11 @@ async def process_message(message):
         result = cursor.fetchone()
         conn.close()
         if result:
+            # If the image is already stored in the database, use the existing URL
+            print("Image already stored in the database:", result[0])
             image_url = result[0]
         else:
+            # If the image is not stored in the database, download it and store the URL
             image_url = await download_telegram_image(file_id)
 
     await store_message(message.message_id, text, image_url)
@@ -161,7 +167,7 @@ async def process_edited_message(message):
 async def store_message(message_id, text, image_url):
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
-    created_at = datetime.utcnow().isoformat()
+    created_at = datetime.now(timezone.utc).isoformat()
     updated_at = created_at
     cursor.execute(
         """
@@ -193,7 +199,7 @@ async def store_message(message_id, text, image_url):
 async def update_message(message_id, text, image_url):
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
-    updated_at = datetime.utcnow().isoformat()
+    updated_at = datetime.now(timezone.utc).isoformat()
     cursor.execute(
         """
         UPDATE posts SET text=?, image_url=?, updated_at=? WHERE message_id=?
@@ -218,6 +224,16 @@ async def publish_to_wordpress(message_id, title, content, image_url):
 
     if image_url:
         media_id = await upload_image_to_wordpress(image_url)
+        conn = sqlite3.connect("microblog.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE posts SET wp_media_id=? WHERE message_id=?
+        """,
+            (media_id, message_id),
+        )
+        conn.commit()
+        conn.close()
 
     post_data = {
         "title": title,
@@ -243,7 +259,26 @@ async def update_wordpress_post(message_id, wp_post_id, title, content, image_ur
     media_id = None
 
     if image_url:
-        media_id = await upload_image_to_wordpress(image_url)
+
+        conn = sqlite3.connect("microblog.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT wp_media_id FROM posts WHERE message_id=?", (message_id,)
+        )
+        result = cursor.fetchone()
+        if result and result[0]:
+            media_id = result[0]
+        else:
+            media_id = await upload_image_to_wordpress(image_url)
+
+        cursor.execute(
+            """
+            UPDATE posts SET wp_media_id=? WHERE message_id=?
+        """,
+            (media_id, message_id),
+        )
+        conn.commit()
+        conn.close()
 
     post_data = {
         "title": title,
@@ -252,7 +287,7 @@ async def update_wordpress_post(message_id, wp_post_id, title, content, image_ur
         "featured_media": media_id if media_id else None,
     }
 
-    print("Updating WordPress Post:", wp_post_id, post_data)  # Debugging information
+    # print("Updating WordPress Post:", wp_post_id, post_data)  # Debugging information
     response = requests.post(
         f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", json=post_data, auth=auth
     )
@@ -267,7 +302,6 @@ async def update_wordpress_post(message_id, wp_post_id, title, content, image_ur
 async def upload_image_to_wordpress(image_path):
     auth = (WP_USERNAME, WP_PASSWORD)
     wpmwdiaurl = f"{WORDPRESS_URL}/wp-json/wp/v2/media"
-    print(f"Uploading to: {wpmwdiaurl}")  # Print the URL for debugging
 
     with open(image_path, "rb") as img_file:
         files = {"file": img_file}
@@ -281,7 +315,10 @@ async def upload_image_to_wordpress(image_path):
                 },
             )
             response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-            return response.json()["id"]
+            wp_media_id = response.json()["id"]
+
+            return wp_media_id
+
         except requests.exceptions.RequestException as e:
             print(f"Error uploading image: {e}")
             if response.status_code != 201:
@@ -310,6 +347,7 @@ async def check_deleted_messages():
     cursor = conn.cursor()
     cursor.execute("SELECT message_id, wp_post_id FROM posts WHERE deleted=0")
     stored_messages = cursor.fetchall()
+    print("Stored Messages ID:", stored_messages)
 
     updates = await bot.get_updates()
     current_message_ids = set()
@@ -317,8 +355,9 @@ async def check_deleted_messages():
     for update in updates:
         if update.channel_post and update.channel_post.chat.id == TELEGRAM_CHANNEL_ID:
             current_message_ids.add(update.channel_post.message_id)
-
+    print("Current Message IDs:", current_message_ids)
     deleted_message_ids = {row[0] for row in stored_messages} - current_message_ids
+    print("Deleted Message IDs:", deleted_message_ids)
 
     for message_id in deleted_message_ids:
         print(f"Message {message_id} has been deleted.")
@@ -339,9 +378,7 @@ async def delete_wordpress_post(wp_post_id):
         f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", auth=auth
     )
     print("Deleting WordPress Post:", wp_post_id)  # Debugging information
-    print(
-        "WordPress Delete Response:", response.status_code, response.text
-    )  # Debugging information
+    # print("WordPress Delete Response:", response.status_code, response.text)  # Debugging information
     if response.status_code == 200:
         print(f"WordPress post {wp_post_id} deleted successfully.")
 
