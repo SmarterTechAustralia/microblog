@@ -124,10 +124,25 @@ async def process_message(message):
     image_url = None
 
     if message.photo:
-        file_id = message.photo[-1].file_id
-        image_url = await download_telegram_image(file_id)
+        file_id = new_func(message)
+        conn = sqlite3.connect("microblog.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT image_url FROM posts WHERE image_url LIKE ?", (f"%{file_id}%",)
+        )
+        result = cursor.fetchone()
+        conn.close()
+        if result:
+            image_url = result[0]
+        else:
+            image_url = await download_telegram_image(file_id)
 
     await store_message(message.message_id, text, image_url)
+
+
+def new_func(message):
+    file_id = message.photo[-1].file_id
+    return file_id
 
 
 # Process Edited Telegram Message
@@ -169,7 +184,7 @@ async def store_message(message_id, text, image_url):
     wp_post_id = cursor.fetchone()
     conn.close()
     if wp_post_id:
-        await update_wordpress_post(wp_post_id[0], text, text, image_url)
+        await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
     else:
         await publish_to_wordpress(message_id, text, text, image_url)
 
@@ -190,13 +205,14 @@ async def update_message(message_id, text, image_url):
     wp_post_id = cursor.fetchone()
     conn.close()
     if wp_post_id:
-        await update_wordpress_post(wp_post_id[0], text, text, image_url)
+        await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
     else:
         print(f"No WordPress post ID found for message ID {message_id}")
 
 
 # Publish Post to WordPress
 async def publish_to_wordpress(message_id, title, content, image_url):
+    print("Publishing to WordPress:", message_id)  # Debugging information
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
 
@@ -211,15 +227,18 @@ async def publish_to_wordpress(message_id, title, content, image_url):
     }
 
     # print("Publishing to WordPress:", post_data)  # Debugging information
-    response = requests.post(WORDPRESS_URL, json=post_data, auth=auth)
-    # print("WordPress Response:", response.status_code, response.text)  # Debugging information
+    response = requests.post(
+        f"{WORDPRESS_URL}/wp-json/wp/v2/posts", json=post_data, auth=auth
+    )
+
     if response.status_code == 201:
         wp_post_id = response.json()["id"]
+        print(f"WordPress post {wp_post_id} created successfully.")
         await update_wp_post_id(message_id, wp_post_id)
 
 
 # Update WordPress Post
-async def update_wordpress_post(wp_post_id, title, content, image_url):
+async def update_wordpress_post(message_id, wp_post_id, title, content, image_url):
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
 
@@ -234,35 +253,45 @@ async def update_wordpress_post(wp_post_id, title, content, image_url):
     }
 
     print("Updating WordPress Post:", wp_post_id, post_data)  # Debugging information
-    response = requests.post(f"{WORDPRESS_URL}/{wp_post_id}", json=post_data, auth=auth)
-    print(
-        "WordPress Update Response:", response.status_code, response.text
-    )  # Debugging information
+    response = requests.post(
+        f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", json=post_data, auth=auth
+    )
+
     if response.status_code == 200:
         print(f"WordPress post {wp_post_id} updated successfully.")
     elif response.status_code == 404:
         print(f"WordPress post {wp_post_id} not found, creating a new post.")
-        await publish_to_wordpress(wp_post_id, title, content, image_url)
+        await publish_to_wordpress(message_id, title, content, image_url)
 
 
-# Upload Image to WordPress
 async def upload_image_to_wordpress(image_path):
-    print("Uploading Image to WordPress:", image_path)
     auth = (WP_USERNAME, WP_PASSWORD)
+    wpmwdiaurl = f"{WORDPRESS_URL}/wp-json/wp/v2/media"
+    print(f"Uploading to: {wpmwdiaurl}")  # Print the URL for debugging
+
     with open(image_path, "rb") as img_file:
         files = {"file": img_file}
-        response = requests.post(
-            f"{WORDPRESS_URL}/wp-json/wp/v2/media", data=files, auth=auth
-        )
-        print(
-            "Uploading Image to WordPress:", response.status_code, response.text
-        )  # Debugging information
-        if response.status_code == 201:
+        try:
+            response = requests.post(
+                wpmwdiaurl,
+                files=files,
+                auth=auth,
+                headers={
+                    "Content-Disposition": f'attachment; filename="{os.path.basename(image_path)}"'
+                },
+            )
+            response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
             return response.json()["id"]
+        except requests.exceptions.RequestException as e:
+            print(f"Error uploading image: {e}")
+            if response.status_code != 201:
+                print(f"Response status code: {response.status_code} {response.text}")
+            return None
 
 
 # Update WordPress Post ID in SQLite
 async def update_wp_post_id(message_id, wp_post_id):
+    print(f"Updating WordPress Post ID for message ID {message_id} to {wp_post_id}")
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
     cursor.execute(
@@ -306,7 +335,9 @@ async def check_deleted_messages():
 # Delete WordPress Post
 async def delete_wordpress_post(wp_post_id):
     auth = (WP_USERNAME, WP_PASSWORD)
-    response = requests.delete(f"{WORDPRESS_URL}/{wp_post_id}", auth=auth)
+    response = requests.delete(
+        f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", auth=auth
+    )
     print("Deleting WordPress Post:", wp_post_id)  # Debugging information
     print(
         "WordPress Delete Response:", response.status_code, response.text

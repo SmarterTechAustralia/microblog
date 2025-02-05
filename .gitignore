@@ -29,6 +29,7 @@ env/
 /sys
 /tmp
 /var
+/images
 
 # Environment variables
 .env
