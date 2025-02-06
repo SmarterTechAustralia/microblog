@@ -6,6 +6,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 
 - Python 3.x
 - pip (Python package installer)
+- WordPress Site
 
 ## Installation
 
@@ -33,7 +34,10 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
       url: "YOUR_WORDPRESS_URL"
       username: "YOUR_WORDPRESS_USERNAME"
       password: "YOUR_WORDPRESS_PASSWORD"
+    ```
 
+- You should have or create a Telegram bot and add it to your channel as an admin.
+- You should have a WordPress site with an admin username and an active API key.
 
 ## Usage
 
@@ -48,19 +52,6 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     ```sh
     python sync.py
     ```
-3. Create a `keys.yaml` file and fill it with the following content and replace your credential: 
-```
-telegram:
-  bot_token: your_telegram_bot_token
-  bot_username: your_bot_uername
-  channel_id: your_channelID_that_starts_with-100
-
-wordpress:
-  url: "https://yourWPsite"
-  username: wp_username
-  password: WP_API_PASS
-  
-```
 
 ## Features
 
