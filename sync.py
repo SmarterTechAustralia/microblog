@@ -223,7 +223,16 @@ async def publish_to_wordpress(message_id, title, content, image_url):
     media_id = None
 
     if image_url:
-        media_id = await upload_image_to_wordpress(image_url)
+        conn = sqlite3.connect("microblog.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT wp_media_id FROM posts WHERE message_id=?", (message_id,)
+        )
+        result = cursor.fetchone()
+        if result and result[0]:
+            media_id = result[0]
+        else:
+            media_id = await upload_image_to_wordpress(image_url)
         conn = sqlite3.connect("microblog.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -341,7 +350,10 @@ async def update_wp_post_id(message_id, wp_post_id):
     conn.close()
 
 
-# Check for Deleted Messages
+# Check for Deleted Messages in Telegram Channel and Delete from WordPress
+# This function is not working as expected. It needs to be fixed.
+
+
 async def check_deleted_messages():
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
@@ -378,7 +390,7 @@ async def delete_wordpress_post(wp_post_id):
         f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", auth=auth
     )
     print("Deleting WordPress Post:", wp_post_id)  # Debugging information
-    # print("WordPress Delete Response:", response.status_code, response.text)  # Debugging information
+
     if response.status_code == 200:
         print(f"WordPress post {wp_post_id} deleted successfully.")
 
@@ -387,7 +399,8 @@ async def delete_wordpress_post(wp_post_id):
 async def sync():
     print("Starting sync process...")
     await fetch_channel_messages()
-    await check_deleted_messages()
+    # disabled the check_deleted_messages function until it is fixed
+    # await check_deleted_messages()
     print("Sync process completed.")
 
 
