@@ -2,11 +2,14 @@
 
 This project synchronizes posts between a Telegram channel and a WordPress blog. It uses a SQLite database to store the posts and the `python-telegram-bot` library to interact with the Telegram API.
 
+
 ## Prerequisites
 
-- Python 3.x
-- pip (Python package installer)
-- WordPress Site
+    - Python 3.x
+    - pip (Python package installer)
+    - Telegram Channel
+    - Telegram Bot
+    - WordPress Site
 
 ## Installation
 
@@ -23,7 +26,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     pip install -r requirements.txt
     ```
 
-3. Create a [keys.yaml](http://_vscodecontentref_/1) file in the project root directory with the following structure:
+3. Create a `keys.yaml` file in the project root directory with the following structure:
 
     ```yaml
     telegram:
@@ -35,9 +38,41 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
       username: "YOUR_WORDPRESS_USERNAME"
       password: "YOUR_WORDPRESS_PASSWORD"
     ```
+4. update your `kesys.yaml` with Telegram Bot and WordPress credential
+    - Telegram Bot
+        - You should have or create a Telegram bot and add it to your channel as an admin. Follow these steps:
+            1. **Create a Telegram Bot**:
+                - Open the Telegram app and search for the `@BotFather` bot.
+                - Start a chat with `@BotFather` and send the command `/newbot`.
+                - Follow the instructions to choose a name and username for your bot.
+                - After completing the setup, `@BotFather` will provide you with a bot token. Save this token as you will need it later.
 
-- You should have or create a Telegram bot and add it to your channel as an admin.
-- You should have a WordPress site with an admin username and an active API key.
+            2. **Get the Channel ID**:
+                - Add your bot to the desired Telegram channel.
+                - Make the bot an admin of the channel.
+                - To get the channel ID, you can use the following method:
+                    - Forward a message from your channel to `@userinfobot` on Telegram.
+                    - `@userinfobot` will reply with information about the forwarded message, including the channel ID (it will be a negative number).
+
+            3. **Configure the Bot**:
+                - Ensure your bot has the necessary permissions to read messages and post in the channel.
+
+            4. **Add the Bot Token and Channel ID to `keys.yaml`**:
+                - Use the bot token and channel ID in the `keys.yaml` file as shown in the installation section.
+    - WordPress Site
+        - You should have a WordPress site with an admin username and an active API key:
+        1. **Set Up a WordPress Site**:
+            - Ensure you have a WordPress site up and running.
+            - You should have an admin username and password for your WordPress site.
+
+        2. **Generate an API Key**:
+            - Log in to your WordPress admin dashboard.
+            - Navigate to `Users` > `Profile`.
+            - Scroll down to the `Application Passwords` section.
+            - Enter a name for the application (e.g., "Microblog Sync") and click `Add New Application Password`.
+            - Copy the generated API key and save it securely as you will need it later.
+            - Use this API key in the `keys.yaml` file you have created previously.
+
 
 ## Usage
 
@@ -63,8 +98,8 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 
 ## Code Overview
 
-- [sync.py](http://_vscodecontentref_/2): Main script that handles the synchronization process.
-- [keys.yaml](http://_vscodecontentref_/3): Configuration file containing API keys and credentials.
+- `sync.py`: Main script that handles the synchronization process.
+- `keys.yaml`: Configuration file containing API keys and credentials.
 
 ## Functions
 
