@@ -92,31 +92,38 @@ async def fetch_channel_messages():
     try:
         updates = await bot.get_updates()
         if not updates:  # No new messages
-            print("No new messages to process.")
+            print("No new messages feteched to process.")
             return
 
         for update in updates:
             # print("Raw Update:", update)  # Print raw data received from Telegram
 
-            if update.message and update.message.chat.id == TELEGRAM_CHANNEL_ID:
+            if (
+                update.message and update.message.chat.id == TELEGRAM_CHANNEL_ID
+            ):  # Check if the message is from the correct channel
+                print("Message")
                 await process_message(update.message)
             elif (
                 update.channel_post
                 and update.channel_post.chat.id == TELEGRAM_CHANNEL_ID
-            ):
+            ):  # Check if the channel post is from the correct channel
+                print("Channael Post")
                 await process_message(update.channel_post)
             elif (
                 update.edited_message
                 and update.edited_message.chat.id == TELEGRAM_CHANNEL_ID
-            ):
+            ):  # Check if the edited message is from the correct channel
+                print("Edited Message")
                 await process_edited_message(update.edited_message)
             elif (
                 update.edited_channel_post
                 and update.edited_channel_post.chat.id == TELEGRAM_CHANNEL_ID
-            ):
+            ):  # Check if the edited channel post is from the correct channel
+                print("Edited Channel Post")
                 await process_edited_message(update.edited_channel_post)
             else:
-                print("No new messages to process.")
+                print("Unknown message type:", update, "\n\n\n")
+
     except TelegramError as e:
         print("Failed to fetch messages:", e)
 
