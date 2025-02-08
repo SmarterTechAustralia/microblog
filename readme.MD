@@ -31,7 +31,18 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     python3 -m venv .
     ```
 
-    - Replace `python3` with `python` if you are on Windows.
+    - Enter your virtual environment in Linux:
+
+    ```sh
+    source bin/activate 
+    ```
+
+    - Or if you are using Windows:
+    ```sh
+    .\Scripts\activate
+    ```
+
+   > **_Note:_** Replace `python3` with `python` if you are on Windows.
 
 2. Install the required Python packages:
 
@@ -40,6 +51,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     ```
 
 3. Create a `keys.yaml` file in the project root directory with the following structure:
+     - in linux try `nano keys.yaml` 
 
     ```yaml
     telegram:
