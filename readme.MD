@@ -1,7 +1,11 @@
 # Microblog Sync
 
+
 This project synchronizes posts between a Telegram channel and a WordPress blog. It uses a SQLite database to store the posts and the `python-telegram-bot` library to interact with the Telegram API.
 
+
+
+> We strongly believe that we cannot trust media controlled by billionaires. If we use them, we should also keep a copy on our own website and database. That's why we created this Python program—to help you save everything you publish on your Telegram channel, both on your local machine and your WordPress site.
 
 ## Prerequisites
 
