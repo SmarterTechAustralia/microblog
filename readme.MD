@@ -121,6 +121,42 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 - `run_main()`: Runs the main async function.
 - `main()`: Initializes the database and runs the main async function.
 
+## Running the app automatically
+
+### On Linux
+
+To run the app automatically using a cron job, follow these steps:
+
+1. Open the crontab file for editing:
+
+    ```sh
+    crontab -e
+    ```
+
+2. Add a new cron job to run the sync script at your desired interval. For example, to run the script every hour, add the following line:
+
+    ```sh
+    0 * * * * /usr/bin/python3 /home/kevin/projects/microblog/sync.py
+    ```
+
+3. Save and close the crontab file. The cron job will now run the script automatically at the specified interval.
+
+### On Windows
+
+To run the app automatically using Task Scheduler, follow these steps:
+
+1. Open Task Scheduler from the Start menu.
+
+2. Click on "Create Basic Task" in the Actions pane.
+
+3. Follow the wizard to set up the task:
+    - Name: Enter a name for the task (e.g., "Microblog Sync").
+    - Trigger: Choose how often you want the task to run (e.g., daily, weekly).
+    - Action: Select "Start a program" and browse to the Python executable (e.g., `C:\Python39\python.exe`).
+    - Add arguments: Enter the path to the sync script (e.g., `C:\Users\Kevin\projects\microblog\sync.py`).
+
+4. Finish the wizard and the task will be created. The Task Scheduler will now run the script automatically at the specified interval.
+
 
 ## Questions and help
 For any questions or assistance, feel free to reach out. I will respond as soon as I can. If you find this project helpful, you can support me by buying me a coffee [here](https://buymeacoffee.com/kevinjamau).
