@@ -172,7 +172,8 @@ To run the app automatically using Task Scheduler, follow these steps:
 
 
 ## Questions and help
-For any questions or assistance, feel free to reach out. I will respond as soon as I can. If you find this project helpful, you can support me by buying me a coffee [here](https://buymeacoffee.com/kevinjamau).
+For any questions or assistance, feel free to reach out. I will respond as soon as I can. If you find this project helpful, you can support me by buying me a coffee 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/kevinjamau)
 
 ## License
 
