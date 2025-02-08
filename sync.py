@@ -22,8 +22,8 @@ with open("keys.yaml", "r") as file:
     WP_PASSWORD = keys["wordpress"]["password"]
 
     # Bluesky Credentials
-    bluesky_username = keys["bluesky"]["handle"]
-    bluesky_password = keys["bluesky"]["password"]
+    # bluesky_username = keys["bluesky"]["handle"]
+    # bluesky_password = keys["bluesky"]["password"]
 
 # Initialize Telegram Bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
