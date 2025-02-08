@@ -9,6 +9,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
 
 ## Prerequisites
 
+    - Windows, Linux, or WSL (Windows Subsystem for Linux) on Windows is highly recommended  
     - Python 3.x
     - pip (Python package installer)
     - Telegram Channel
@@ -23,6 +24,14 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     git clone https://github.com/SmarterTechAustralia/microblog.git
     cd microblog
     ```
+
+    - It is recommended to run it in a virtual environment. For example:
+
+    ```sh
+    python3 -m venv .
+    ```
+
+    - Replace `python3` with `python` if you are on Windows.
 
 2. Install the required Python packages:
 
