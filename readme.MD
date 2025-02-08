@@ -49,7 +49,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     wordpress:
       url: "YOUR_WORDPRESS_URL"
       username: "YOUR_WORDPRESS_USERNAME"
-      password: "YOUR_WORDPRESS_PASSWORD"
+      password: "YOUR_WORDPRESS_API_KEY"
     ```
 4. update your `kesys.yaml` with Telegram Bot and WordPress credential
     - Telegram Bot
