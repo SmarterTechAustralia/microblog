@@ -35,7 +35,7 @@ env/
 .env
 
 # YAML configuration files
-keys.yaml
+*.yaml
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/

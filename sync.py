@@ -196,7 +196,7 @@ async def store_message(message_id, text, image_url):
     cursor.execute("SELECT wp_post_id FROM posts WHERE message_id=?", (message_id,))
     wp_post_id = cursor.fetchone()
     conn.close()
-    if wp_post_id:
+    if wp_post_id and isinstance(wp_post_id[0], int):
         await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
     else:
         await publish_to_wordpress(message_id, text, text, image_url)
@@ -217,7 +217,7 @@ async def update_message(message_id, text, image_url):
     cursor.execute("SELECT wp_post_id FROM posts WHERE message_id=?", (message_id,))
     wp_post_id = cursor.fetchone()
     conn.close()
-    if wp_post_id:
+    if wp_post_id and isinstance(wp_post_id[0], int):
         await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
     else:
         print(f"No WordPress post ID found for message ID {message_id}")
@@ -262,11 +262,14 @@ async def publish_to_wordpress(message_id, title, content, image_url):
     response = requests.post(
         f"{WORDPRESS_URL}/wp-json/wp/v2/posts", json=post_data, auth=auth
     )
+    print("Response:", response)  # Debugging information
 
     if response.status_code == 201:
         wp_post_id = response.json()["id"]
         print(f"WordPress post {wp_post_id} created successfully.")
         await update_wp_post_id(message_id, wp_post_id)
+    else:
+        print(f"Failed to publish to WordPress: {response.status_code} {response.text}")
 
 
 # Update WordPress Post
@@ -321,6 +324,10 @@ async def upload_image_to_wordpress(image_path):
 
     with open(image_path, "rb") as img_file:
         files = {"file": img_file}
+        headers = {
+            "Authorization": "Basic <base64-encoded-credentials>",
+            "Content-Type": "image/jpeg",
+        }
         try:
             response = requests.post(
                 wpmwdiaurl,
