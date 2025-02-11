@@ -8,6 +8,7 @@ from telegram.error import TelegramError
 from io import BytesIO
 import yaml
 from datetime import datetime, timezone
+import langid
 
 with open("keys.yaml", "r") as file:
     keys = yaml.safe_load(file)
@@ -73,6 +74,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS posts (
             message_id INTEGER PRIMARY KEY,
             text TEXT,
+            text_language TEXT;
             image_url TEXT,
             wp_post_id INTEGER,
             wp_media_id INTEGER,
@@ -172,13 +174,14 @@ async def process_edited_message(message):
 
 # Store Message in SQLite
 async def store_message(message_id, text, image_url):
+    text_language = langid.classify(text)[0]
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
     created_at = datetime.now(timezone.utc).isoformat()
     updated_at = created_at
     cursor.execute(
         """
-        INSERT INTO posts (message_id, text, image_url, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
+        INSERT INTO posts (message_id, text, text_langage, image_url, created_at, updated_at) VALUES (?, ? ,?, ?, ?, ?)
         ON CONFLICT(message_id) DO UPDATE SET text=?, image_url=?, updated_at=?
     """,
         (
