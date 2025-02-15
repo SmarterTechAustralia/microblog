@@ -14,6 +14,7 @@ import langid
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script directory
 yaml_path = os.path.join(BASE_DIR, "keys.yaml")  # Absolute path to keys.yaml
 db_path = os.path.join(BASE_DIR, "microblog.db")  # Absolute path to DB
+images_dir = os.path.join(BASE_DIR, "images")  # Absolute path to images directory
 
 with open(yaml_path, "r") as file:
     keys = yaml.safe_load(file)
@@ -48,8 +49,9 @@ async def verify_bot_token():
 async def download_telegram_image(file_id):
     # print("Downloading image:", file_id)
     try:
-        os.makedirs("images", exist_ok=True)
-        image_path = os.path.join("images", f"{file_id}.jpg")
+
+        os.makedirs(images_dir, exist_ok=True)
+        image_path = os.path.join(images_dir, f"{file_id}.jpg")
 
         if os.path.exists(image_path):
             # print("Image already exists:", image_path)
