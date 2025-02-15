@@ -45,3 +45,6 @@ env/
 
 # macOS files
 .DS_Store
+
+# old files
+*.old

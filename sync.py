@@ -1,6 +1,7 @@
 from curses import echo
 import os
 import sqlite3
+from tkinter import W
 import requests
 import asyncio
 from telegram import Bot, InputFile
@@ -18,7 +19,8 @@ with open("keys.yaml", "r") as file:
     TELEGRAM_CHANNEL_ID = keys["telegram"]["channel_id"]
 
     # WordPress Credentials
-    WORDPRESS_URL = keys["wordpress"]["url"]
+    WORDPRESS_URLEN = keys["wordpress"]["urlen"]
+    WORDPRESS_URLFA = keys["wordpress"]["urlfa"]
     WP_USERNAME = keys["wordpress"]["username"]
     WP_PASSWORD = keys["wordpress"]["password"]
 
@@ -74,7 +76,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS posts (
             message_id INTEGER PRIMARY KEY,
             text TEXT,
-            text_language TEXT;
+            text_language TEXT,
             image_url TEXT,
             wp_post_id INTEGER,
             wp_media_id INTEGER,
@@ -175,18 +177,27 @@ async def process_edited_message(message):
 # Store Message in SQLite
 async def store_message(message_id, text, image_url):
     text_language = langid.classify(text)[0]
+    if text_language == "en":
+        WORDPRESS_URL = WORDPRESS_URLEN
+    elif text_language == "fa":
+        WORDPRESS_URL = WORDPRESS_URLFA
+    else:  # Default to English
+        WORDPRESS_URL = WORDPRESS_URLEN
+
+    print(WORDPRESS_URL)
     conn = sqlite3.connect("microblog.db")
     cursor = conn.cursor()
     created_at = datetime.now(timezone.utc).isoformat()
     updated_at = created_at
     cursor.execute(
         """
-        INSERT INTO posts (message_id, text, text_langage, image_url, created_at, updated_at) VALUES (?, ? ,?, ?, ?, ?)
+        INSERT INTO posts (message_id, text, text_language, image_url, created_at, updated_at) VALUES (?, ? ,?, ?, ?, ?)
         ON CONFLICT(message_id) DO UPDATE SET text=?, image_url=?, updated_at=?
     """,
         (
             message_id,
             text,
+            text_language,
             image_url,
             created_at,
             updated_at,
@@ -200,9 +211,11 @@ async def store_message(message_id, text, image_url):
     wp_post_id = cursor.fetchone()
     conn.close()
     if wp_post_id and isinstance(wp_post_id[0], int):
-        await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
+        await update_wordpress_post(
+            WORDPRESS_URL, message_id, wp_post_id[0], text, text, image_url
+        )
     else:
-        await publish_to_wordpress(message_id, text, text, image_url)
+        await publish_to_wordpress(WORDPRESS_URL, message_id, text, text, image_url)
 
 
 # Update Message in SQLite and WordPress
@@ -227,7 +240,7 @@ async def update_message(message_id, text, image_url):
 
 
 # Publish Post to WordPress
-async def publish_to_wordpress(message_id, title, content, image_url):
+async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_url):
     print("Publishing to WordPress:", message_id)  # Debugging information
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
@@ -242,7 +255,7 @@ async def publish_to_wordpress(message_id, title, content, image_url):
         if result and result[0]:
             media_id = result[0]
         else:
-            media_id = await upload_image_to_wordpress(image_url)
+            media_id = await upload_image_to_wordpress(WORDPRESS_URL, image_url)
         conn = sqlite3.connect("microblog.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -276,7 +289,9 @@ async def publish_to_wordpress(message_id, title, content, image_url):
 
 
 # Update WordPress Post
-async def update_wordpress_post(message_id, wp_post_id, title, content, image_url):
+async def update_wordpress_post(
+    WORDPRESS_URL, message_id, wp_post_id, title, content, image_url
+):
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
 
@@ -318,10 +333,10 @@ async def update_wordpress_post(message_id, wp_post_id, title, content, image_ur
         print(f"WordPress post {wp_post_id} updated successfully.")
     elif response.status_code == 404:
         print(f"WordPress post {wp_post_id} not found, creating a new post.")
-        await publish_to_wordpress(message_id, title, content, image_url)
+        await publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_url)
 
 
-async def upload_image_to_wordpress(image_path):
+async def upload_image_to_wordpress(WORDPRESS_URL, image_path):
     auth = (WP_USERNAME, WP_PASSWORD)
     wpmwdiaurl = f"{WORDPRESS_URL}/wp-json/wp/v2/media"
 

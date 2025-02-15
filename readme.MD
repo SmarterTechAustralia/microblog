@@ -50,8 +50,8 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     pip install -r requirements.txt
     ```
 
-3. Create a `keys.yaml` file in the project root directory with the following structure:
-     - in linux try `nano keys.yaml` 
+3. Create a [keys.yaml](http://_vscodecontentref_/1) file in the project root directory with the following structure:
+     - in linux try `sudo nano keys.yaml` 
 
     ```yaml
     telegram:
@@ -59,12 +59,14 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
       channel_id: "YOUR_TELEGRAM_CHANNEL_ID"
 
     wordpress:
-      url: "YOUR_WORDPRESS_URL"
+      urlen: "YOUR_EN_WORDPRESS_URL"
+      urlfa: "YOUR_FA_WORDPRESS_URL"
       username: "YOUR_WORDPRESS_USERNAME"
       password: "YOUR_WORDPRESS_API_KEY"
     ```
-4. update your `kesys.yaml` with Telegram Bot and WordPress credential
-    - Telegram Bot
+
+4. Update your [keys.yaml](http://_vscodecontentref_/2) with Telegram Bot and WordPress credentials:
+    - **Telegram Bot**:
         - You should have or create a Telegram bot and add it to your channel as an admin. Follow these steps:
             1. **Create a Telegram Bot**:
                 - Open the Telegram app and search for the `@BotFather` bot.
@@ -82,22 +84,22 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
             3. **Configure the Bot**:
                 - Ensure your bot has the necessary permissions to read messages and post in the channel.
 
-            4. **Add the Bot Token and Channel ID to `keys.yaml`**:
-                - Use the bot token and channel ID in the `keys.yaml` file as shown in the installation section.
-    - WordPress Site
+            4. **Add the Bot Token and Channel ID to [keys.yaml](http://_vscodecontentref_/3)**:
+                - Use the bot token and channel ID in the [keys.yaml](http://_vscodecontentref_/4) file as shown in the installation section.
+
+    - **WordPress Site**:
         - You should have a WordPress site with an admin username and an active API key:
-        1. **Set Up a WordPress Site**:
-            - Ensure you have a WordPress site up and running.
-            - You should have an admin username and password for your WordPress site.
+            1. **Set Up a WordPress Site**:
+                - Ensure you have a WordPress site up and running.
+                - You should have an admin username and password for your WordPress site.
 
-        2. **Generate an API Key**:
-            - Log in to your WordPress admin dashboard.
-            - Navigate to `Users` > `Profile`.
-            - Scroll down to the `Application Passwords` section.
-            - Enter a name for the application (e.g., "Microblog Sync") and click `Add New Application Password`.
-            - Copy the generated API key and save it securely as you will need it later.
-            - Use this API key in the `keys.yaml` file you have created previously.
-
+            2. **Generate an API Key**:
+                - Log in to your WordPress admin dashboard.
+                - Navigate to `Users` > `Profile`.
+                - Scroll down to the `Application Passwords` section.
+                - Enter a name for the application (e.g., "Microblog Sync") and click `Add New Application Password`.
+                - Copy the generated API key and save it securely as you will need it later.
+                - Use this API key in the [keys.yaml](http://_vscodecontentref_/5) file you have created previously.
 
 ## Usage
 
@@ -113,38 +115,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
     python sync.py
     ```
 
-## Features
-
-- Fetches messages from a Telegram channel.
-- Downloads images from Telegram messages.
-- Publishes posts to a WordPress blog.
-- Updates existing WordPress posts.
-- Marks deleted Telegram messages and deletes corresponding WordPress posts. (Disabled)
-
-## Code Overview
-
-- `sync.py`: Main script that handles the synchronization process.
-- `keys.yaml`: Configuration file containing API keys and credentials.
-
-## Functions
-
-- `verify_bot_token()`: Verifies the Telegram bot token.
-- `download_telegram_image(file_id)`: Downloads an image from Telegram.
-- `init_db()`: Initializes the SQLite database.
-- `fetch_channel_messages()`: Fetches messages from the Telegram channel.
-- `process_message(message)`: Processes a Telegram message.
-- `process_edited_message(message)`: Processes an edited Telegram message.
-- `store_message(message_id, text, image_url, media_id, file_id)`: Stores a message in the SQLite database.
-- `update_message(message_id, text, image_url, media_id, file_id)`: Updates a message in the SQLite database.
-- `publish_to_wordpress(message_id, title, content, image_url, media_id)`: Publishes a post to WordPress.
-- `update_wordpress_post(wp_post_id, title, content, image_url)`: Updates a WordPress post.
-- `upload_image_to_wordpress(image_url)`: Uploads an image to WordPress.
-- `update_wp_post_id(message_id, wp_post_id)`: Updates the WordPress post ID in the SQLite database.
-- `check_deleted_messages()`: Checks for deleted messages and updates the database and WordPress accordingly.
-- `delete_wordpress_post(wp_post_id)`: Deletes a WordPress post.
-- `sync()`: Main sync process.
-- `run_main()`: Runs the main async function.
-- `main()`: Initializes the database and runs the main async function.
+> **_Note:_** Ensure your virtual environment is activated before running the sync process.
 
 ## Running the app automatically
 
@@ -181,8 +152,6 @@ To run the app automatically using Task Scheduler, follow these steps:
     - Add arguments: Enter the path to the sync script (e.g., `C:\Users\Kevin\projects\microblog\sync.py`).
 
 4. Finish the wizard and the task will be created. The Task Scheduler will now run the script automatically at the specified interval.
-
-
 ## Questions and help
 For any questions or assistance, feel free to reach out. I will respond as soon as I can. If you find this project helpful, you can support me by buying me a coffee 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/kevinjamau)
