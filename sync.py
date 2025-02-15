@@ -13,6 +13,7 @@ import langid
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script directory
 yaml_path = os.path.join(BASE_DIR, "keys.yaml")  # Absolute path to keys.yaml
+db_path = os.path.join(BASE_DIR, "microblog.db")  # Absolute path to DB
 
 with open(yaml_path, "r") as file:
     keys = yaml.safe_load(file)
@@ -72,7 +73,7 @@ async def download_telegram_image(file_id):
 
 # Initialize Database
 def init_db():
-    conn = sqlite3.connect("microblog.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -142,7 +143,7 @@ async def process_message(message):
 
     if message.photo:
         file_id = new_func(message)
-        conn = sqlite3.connect("microblog.db")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT image_url FROM posts WHERE image_url LIKE ?", (f"%{file_id}%",)
@@ -188,7 +189,7 @@ async def store_message(message_id, text, image_url):
         WORDPRESS_URL = WORDPRESS_URLEN
 
     print(WORDPRESS_URL)
-    conn = sqlite3.connect("microblog.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     created_at = datetime.now(timezone.utc).isoformat()
     updated_at = created_at
@@ -223,7 +224,7 @@ async def store_message(message_id, text, image_url):
 
 # Update Message in SQLite and WordPress
 async def update_message(message_id, text, image_url):
-    conn = sqlite3.connect("microblog.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     updated_at = datetime.now(timezone.utc).isoformat()
     cursor.execute(
@@ -249,7 +250,7 @@ async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_
     media_id = None
 
     if image_url:
-        conn = sqlite3.connect("microblog.db")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT wp_media_id FROM posts WHERE message_id=?", (message_id,)
@@ -259,7 +260,7 @@ async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_
             media_id = result[0]
         else:
             media_id = await upload_image_to_wordpress(WORDPRESS_URL, image_url)
-        conn = sqlite3.connect("microblog.db")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -300,7 +301,7 @@ async def update_wordpress_post(
 
     if image_url:
 
-        conn = sqlite3.connect("microblog.db")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT wp_media_id FROM posts WHERE message_id=?", (message_id,)
@@ -373,7 +374,7 @@ async def upload_image_to_wordpress(WORDPRESS_URL, image_path):
 # Update WordPress Post ID in SQLite
 async def update_wp_post_id(message_id, wp_post_id):
     print(f"Updating WordPress Post ID for message ID {message_id} to {wp_post_id}")
-    conn = sqlite3.connect("microblog.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -390,7 +391,7 @@ async def update_wp_post_id(message_id, wp_post_id):
 
 
 async def check_deleted_messages():
-    conn = sqlite3.connect("microblog.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT message_id, wp_post_id FROM posts WHERE deleted=0")
     stored_messages = cursor.fetchall()
