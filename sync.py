@@ -11,7 +11,10 @@ import yaml
 from datetime import datetime, timezone
 import langid
 
-with open("keys.yaml", "r") as file:
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script directory
+yaml_path = os.path.join(BASE_DIR, "keys.yaml")  # Absolute path to keys.yaml
+
+with open(yaml_path, "r") as file:
     keys = yaml.safe_load(file)
 
     # Telegram Bot Credentials
