@@ -213,12 +213,20 @@ async def store_message(message_id, text, image_url):
         ),
     )
     conn.commit()
-    cursor.execute("SELECT wp_post_id FROM posts WHERE message_id=?", (message_id,))
-    wp_post_id = cursor.fetchone()
+    cursor.execute(
+        "SELECT wp_post_id, text_language FROM posts WHERE message_id=?", (message_id,)
+    )
+    wp_post_id, text_language = cursor.fetchone()
+    if text_language == "en":
+        WORDPRESS_URL = WORDPRESS_URLEN
+    elif text_language == "fa":
+        WORDPRESS_URL = WORDPRESS_URLFA
+    else:  # Default to English
+        WORDPRESS_URL = WORDPRESS_URLEN
     conn.close()
-    if wp_post_id and isinstance(wp_post_id[0], int):
+    if wp_post_id and isinstance(wp_post_id, int):
         await update_wordpress_post(
-            WORDPRESS_URL, message_id, wp_post_id[0], text, text, image_url
+            WORDPRESS_URL, message_id, wp_post_id, text, text, image_url
         )
     else:
         await publish_to_wordpress(WORDPRESS_URL, message_id, text, text, image_url)
@@ -236,11 +244,21 @@ async def update_message(message_id, text, image_url):
         (text, image_url, updated_at, message_id),
     )
     conn.commit()
-    cursor.execute("SELECT wp_post_id FROM posts WHERE message_id=?", (message_id,))
-    wp_post_id = cursor.fetchone()
+    cursor.execute(
+        "SELECT wp_post_id, text_language FROM posts WHERE message_id=?", (message_id,)
+    )
+    wp_post_id, text_language = cursor.fetchone()
+    if text_language == "en":
+        WORDPRESS_URL = WORDPRESS_URLEN
+    elif text_language == "fa":
+        WORDPRESS_URL = WORDPRESS_URLFA
+    else:  # Default to English
+        WORDPRESS_URL = WORDPRESS_URLEN
     conn.close()
-    if wp_post_id and isinstance(wp_post_id[0], int):
-        await update_wordpress_post(message_id, wp_post_id[0], text, text, image_url)
+    if wp_post_id and isinstance(wp_post_id, int):
+        await update_wordpress_post(
+            WORDPRESS_URL, message_id, wp_post_id, text, text, image_url
+        )
     else:
         print(f"No WordPress post ID found for message ID {message_id}")
 
