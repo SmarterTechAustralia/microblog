@@ -10,6 +10,7 @@ from io import BytesIO
 import yaml
 from datetime import datetime, timezone
 import langid
+from telethon import TelegramClient, functions, types
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script directory
 yaml_path = os.path.join(BASE_DIR, "keys.yaml")  # Absolute path to keys.yaml
@@ -438,6 +439,21 @@ async def check_deleted_messages():
 
     conn.close()
 
+async def list_deleted_messages():
+    async with TelegramClient('session_name', TELEGRAM_API_ID, TELEGRAM_API_HASH) as client:
+        # Get the channel entity
+        channel = await client.get_entity(TELEGRAM_CHANNEL_ID)
+        
+        # Get message history
+        messages = await client.get_messages(channel, limit=100)
+        
+        # Filter out deleted messages
+        deleted_messages = [msg.id for msg in messages if isinstance(msg, types.MessageService) and msg.action]
+        
+        # Print deleted message IDs
+        print("Deleted message IDs:", deleted_messages)
+
+
 
 # Delete WordPress Post
 async def delete_wordpress_post(wp_post_id):
@@ -457,6 +473,8 @@ async def sync():
     await fetch_channel_messages()
     # disabled the check_deleted_messages function until it is fixed
     # await check_deleted_messages()
+    
+    await list_deleted_messages()
     print("Sync process completed.")
 
 
@@ -473,6 +491,8 @@ def main():
 
     # Run the main async function
     asyncio.run(run_main())
+    # Run the async function
+asyncio.run(list_deleted_messages())
 
 
 if __name__ == "__main__":
