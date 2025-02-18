@@ -247,20 +247,26 @@ async def update_message(message_id, text, image_url):
     cursor.execute(
         "SELECT wp_post_id, text_language FROM posts WHERE message_id=?", (message_id,)
     )
-    wp_post_id, text_language = cursor.fetchone()
-    if text_language == "en":
-        WORDPRESS_URL = WORDPRESS_URLEN
-    elif text_language == "fa":
-        WORDPRESS_URL = WORDPRESS_URLFA
-    else:  # Default to English
-        WORDPRESS_URL = WORDPRESS_URLEN
+    result = cursor.fetchone()
     conn.close()
-    if wp_post_id and isinstance(wp_post_id, int):
-        await update_wordpress_post(
-            WORDPRESS_URL, message_id, wp_post_id, text, text, image_url
-        )
+
+    if result:
+        wp_post_id, text_language = result
+        if text_language == "en":
+            WORDPRESS_URL = WORDPRESS_URLEN
+        elif text_language == "fa":
+            WORDPRESS_URL = WORDPRESS_URLFA
+        else:  # Default to English
+            WORDPRESS_URL = WORDPRESS_URLEN
+
+        if wp_post_id and isinstance(wp_post_id, int):
+            await update_wordpress_post(
+                WORDPRESS_URL, message_id, wp_post_id, text, text, image_url
+            )
+        else:
+            print(f"No WordPress post ID found for message ID {message_id}")
     else:
-        print(f"No WordPress post ID found for message ID {message_id}")
+        print(f"No record found in the database for message ID {message_id}")
 
 
 # Publish Post to WordPress
