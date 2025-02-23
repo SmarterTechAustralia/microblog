@@ -32,7 +32,7 @@ pydantic==2.10.6
 pydantic_core==2.27.2
 Pyrogram==2.0.106
 PySocks==1.7.1
-python-telegram-bot==21.10
+python-telegram-bot==21.6
 PyYAML==6.0.2
 requests==2.32.3
 rsa==4.9
