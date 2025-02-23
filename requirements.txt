@@ -24,7 +24,7 @@ lprint==0.0.4
 magic-filter==1.0.12
 multidict==6.1.0
 numpy==1.24.4
-propcache==0.2.1
+propcache==0.2.0
 pyaes==1.6.1
 pyasn1==0.6.1
 pycparser==2.22
