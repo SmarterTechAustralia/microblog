@@ -1,4 +1,5 @@
 from curses import echo
+from email.mime import image
 import os
 import sqlite3
 from tkinter import W
@@ -10,6 +11,8 @@ from io import BytesIO
 import yaml
 from datetime import datetime, timezone
 import langid
+from atproto import Client, models
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script directory
 yaml_path = os.path.join(BASE_DIR, "keys.yaml")  # Absolute path to keys.yaml
@@ -30,8 +33,14 @@ with open(yaml_path, "r") as file:
     WP_PASSWORD = keys["wordpress"]["password"]
 
     # Bluesky Credentials
-    # bluesky_username = keys["bluesky"]["handle"]
-    # bluesky_password = keys["bluesky"]["password"]
+    if "bluesky" in keys:
+        bluesky_username = keys["bluesky"]["handle"]
+        bluesky_password = keys["bluesky"]["password"]
+        bluesky_uri = keys["bluesky"]["uri"]
+    else:
+        bluesky_username = None
+        bluesky_password = None
+
 
 # Initialize Telegram Bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
@@ -71,6 +80,46 @@ async def download_telegram_image(file_id):
     except Exception as e:
         print(f"Error downloading image: {e}")
         return None
+
+
+# Function to load image data
+def load_image_data(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            img_data = img_file.read()
+        return img_data
+    except Exception as e:
+        print(f"Error loading image data: {e}")
+        return None
+
+
+def post_message_bluesky(
+    username, password, title, message, bluesky_uri, img_data=None
+):
+    # Ensure the message does not exceed 300 graphemes
+    message = message[:297] + "..."  # Truncate message to 300 characters
+
+    client = Client()
+    client.login(username, password)
+
+    embed = models.AppBskyEmbedExternal.Main(
+        external=models.AppBskyEmbedExternal.External(
+            title=title,
+            description=message,
+            uri=bluesky_uri,
+        )
+    )
+
+    if img_data:
+        thumb = client.upload_blob(img_data)
+        embed.external.thumb = thumb.blob
+
+    post = client.send_post(
+        f"{title}",
+        embed=embed,
+        langs=["fa", "fa-IR"],
+    )
+    return post.cid
 
 
 # Initialize Database
@@ -325,7 +374,20 @@ async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_
     if response.status_code == 201:
         wp_post_id = response.json()["id"]
         print(f"WordPress post {wp_post_id} created successfully.")
+
         await update_wp_post_id(message_id, wp_post_id)
+        # Post to Bluesky
+        if bluesky_username and bluesky_password:
+            image_data = load_image_data(image_url)
+            bluesky_message_id = post_message_bluesky(
+                bluesky_username,
+                bluesky_password,
+                title,
+                content,
+                bluesky_uri,
+                image_data,
+            )
+            print(f"Bluesky post {bluesky_message_id} created successfully.")
     else:
         print(f"Failed to publish to WordPress: {response.status_code} {response.text}")
 
