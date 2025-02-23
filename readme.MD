@@ -64,6 +64,7 @@ This project synchronizes posts between a Telegram channel and a WordPress blog.
       username: "YOUR_WORDPRESS_USERNAME"
       password: "YOUR_WORDPRESS_API_KEY"
     ```
+- note: you can use "none" for `urlfa` and `urlen` to skip 
 
 4. Update your [keys.yaml](http://_vscodecontentref_/2) with Telegram Bot and WordPress credentials:
     - **Telegram Bot**:

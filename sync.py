@@ -190,6 +190,10 @@ async def store_message(message_id, text, image_url):
     else:  # Default to English
         WORDPRESS_URL = WORDPRESS_URLEN
 
+    if WORDPRESS_URL == "none":
+        print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+        return
+
     print(WORDPRESS_URL)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -259,6 +263,10 @@ async def update_message(message_id, text, image_url):
         else:  # Default to English
             WORDPRESS_URL = WORDPRESS_URLEN
 
+        if WORDPRESS_URL == "none":
+            print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+            return
+
         if wp_post_id and isinstance(wp_post_id, int):
             await update_wordpress_post(
                 WORDPRESS_URL, message_id, wp_post_id, text, text, image_url
@@ -271,6 +279,10 @@ async def update_message(message_id, text, image_url):
 
 # Publish Post to WordPress
 async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_url):
+    if WORDPRESS_URL == "none":
+        print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+        return
+
     print("Publishing to WordPress:", message_id)  # Debugging information
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
@@ -322,6 +334,10 @@ async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_
 async def update_wordpress_post(
     WORDPRESS_URL, message_id, wp_post_id, title, content, image_url
 ):
+    if WORDPRESS_URL == "none":
+        print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+        return
+
     auth = (WP_USERNAME, WP_PASSWORD)
     media_id = None
 
@@ -367,6 +383,11 @@ async def update_wordpress_post(
 
 
 async def upload_image_to_wordpress(WORDPRESS_URL, image_path):
+
+    if WORDPRESS_URL == "none":
+        print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+        return
+
     auth = (WP_USERNAME, WP_PASSWORD)
     wpmwdiaurl = f"{WORDPRESS_URL}/wp-json/wp/v2/media"
 
@@ -440,13 +461,17 @@ async def check_deleted_messages():
         cursor.execute("SELECT wp_post_id FROM posts WHERE message_id=?", (message_id,))
         wp_post_id = cursor.fetchone()
         if wp_post_id:
-            await delete_wordpress_post(wp_post_id[0])
+            await delete_wordpress_post(WORDPRESS_URL, wp_post_id[0])
 
     conn.close()
 
 
 # Delete WordPress Post
-async def delete_wordpress_post(wp_post_id):
+async def delete_wordpress_post(WORDPRESS_URL, wp_post_id):
+    if WORDPRESS_URL == "none":
+        print("WORDPRESS_URL is set to 'none', skipping WordPress operations.")
+        return
+
     auth = (WP_USERNAME, WP_PASSWORD)
     response = requests.delete(
         f"{WORDPRESS_URL}/wp-json/wp/v2/posts/{wp_post_id}", auth=auth
