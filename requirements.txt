@@ -43,4 +43,4 @@ TgCrypto==1.2.5
 typing_extensions==4.12.2
 urllib3==2.2.3
 websockets==13.1
-yarl==1.18.3
+yarl==1.15.2
