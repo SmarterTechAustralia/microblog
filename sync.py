@@ -36,7 +36,6 @@ with open(yaml_path, "r") as file:
     if "bluesky" in keys:
         bluesky_username = keys["bluesky"]["handle"]
         bluesky_password = keys["bluesky"]["password"]
-        bluesky_uri = keys["bluesky"]["uri"]
     else:
         bluesky_username = None
         bluesky_password = None
@@ -96,9 +95,17 @@ def load_image_data(image_path):
 def post_message_bluesky(
     username, password, title, message, bluesky_uri, img_data=None
 ):
+    text_language = langid.classify(title)[0]
+    if text_language == "en":
+        langs = ["en", "en-AU"]
+    elif text_language == "fa":
+        langs = ["fa", "fa-IR"]
+    else:  # Default to English
+        langs = ["en", "en-AU"]
+
     # Ensure the message does not exceed 300 graphemes
     message = message[:297] + "..."  # Truncate message to 300 characters
-
+    title = title[:120] + "..."  # Truncate title to 300 characters
     client = Client()
     client.login(username, password)
 
@@ -117,7 +124,7 @@ def post_message_bluesky(
     post = client.send_post(
         f"{title}",
         embed=embed,
-        langs=["fa", "fa-IR"],
+        langs=langs,
     )
     return post.cid
 
@@ -379,6 +386,8 @@ async def publish_to_wordpress(WORDPRESS_URL, message_id, title, content, image_
         # Post to Bluesky
         if bluesky_username and bluesky_password:
             image_data = load_image_data(image_url)
+            bluesky_uri = f"{WORDPRESS_URL}/?p={wp_post_id}"
+
             bluesky_message_id = post_message_bluesky(
                 bluesky_username,
                 bluesky_password,
