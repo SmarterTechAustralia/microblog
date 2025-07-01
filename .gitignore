@@ -4,6 +4,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.db
+*.share
 
 # Virtual environment
 venv/
