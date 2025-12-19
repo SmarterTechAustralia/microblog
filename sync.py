@@ -2,7 +2,8 @@ from curses import echo
 from email.mime import image
 import os
 import sqlite3
-from tkinter import W
+
+# from tkinter import W
 import requests
 import asyncio
 from telegram import Bot, InputFile
