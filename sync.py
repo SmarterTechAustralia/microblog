@@ -1,3 +1,11 @@
+# language: python
+import warnings
+
+# suppress pydantic's UnsupportedFieldAttributeWarning (and similar UserWarning from pydantic)
+warnings.filterwarnings("ignore", message=".*UnsupportedFieldAttributeWarning.*")
+warnings.filterwarnings("ignore", category=UserWarning, module=r"pydantic\..*")
+
+
 from curses import echo
 from email.mime import image
 import os
@@ -13,12 +21,6 @@ import yaml
 from datetime import datetime, timezone
 import langid
 
-# language: python
-import warnings
-
-warnings.filterwarnings(
-    "ignore", category=UserWarning, message=".*UnsupportedFieldAttributeWarning.*"
-)
 
 from atproto import Client, models
 
