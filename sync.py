@@ -12,6 +12,15 @@ from io import BytesIO
 import yaml
 from datetime import datetime, timezone
 import langid
+import warnings
+
+try:
+    from pydantic.warnings import UnsupportedFieldAttributeWarning
+
+    warnings.filterwarnings("ignore", category=UnsupportedFieldAttributeWarning)
+except Exception:
+    pass
+
 from atproto import Client, models
 
 
