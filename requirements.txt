@@ -22,7 +22,7 @@ libipld==3.0.1
 lprint==0.0.4
 magic-filter==1.0.12
 multidict==6.4.4
-numpy==2.3.0
+numpy==2.2.6
 pi==0.1.2
 propcache==0.3.2
 pyaes==1.6.1
